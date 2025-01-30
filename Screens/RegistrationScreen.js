@@ -6,7 +6,7 @@ import InputField from "../components/InputField";
 import PasswordInput from "../components/PasswordInput";
 import Button from "../components/Button";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("screen");
+
 
 const RegistrationScreen = () => {
 
@@ -20,17 +20,14 @@ const RegistrationScreen = () => {
 
     const handleLoginChange = (value) => {
         setLoginText(value);
-        setKeyboardVisible(true);
     };
 
     const handleEmailChange = (value) => {
         setEmailText(value);
-        setKeyboardVisible(true);
     };
 
     const handlePasswordChange = (value) => {
         setPassword(value);
-        setKeyboardVisible(true);
     };
 
 
@@ -38,69 +35,58 @@ const RegistrationScreen = () => {
         <ImageBackground
             source={image}
             resizeMode="cover"
-            style={styles.bgimage}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} >
-                <KeyboardAvoidingView
-                    style={styles.container}
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}>
-                    <View
-                        style={{
-                            ...styles.registrContainer,
-                            height: keyboardVisible ? "60%" : "77%",
-                        }}>
-                        <View style={styles.registrContainer}>
-                            <View style={styles.avatar}>
-                                <AddIcon style={styles.iconAdd} />
-                            </View>
-                            <Text style={styles.title}>Реєстрація</Text>
-                            <View style={[styles.inputsCont, styles.container]}>
-                                <InputField
-                                    value={loginText}
-                                    placeholder="Логін"
-                                    onFocus={() => setIsLoginFocus(true)}
-                                    onBlur={() => setIsLoginFocus(false)}
-                                    onTextChange={handleLoginChange}
-                                    isFocus={isLoginFocus}
+            style={styles.bgimage}>
 
-                                />
-                                <InputField
-                                    value={emailText}
-                                    placeholder="Електронна пошта"
-                                    onFocus={() => setIsEmailFocus(true)}
-                                    onBlur={() => setIsEmailFocus(false)}
-                                    onTextChange={handleEmailChange}
-                                    isFocus={isEmailFocus}
-                                />
-                                <PasswordInput
-                                    value={password}
-                                    placeholder="Пароль"
-                                    onFocus={() => setIsPasswordFocus(true)}
-                                    onBlur={() => setIsPasswordFocus(false)}
-                                    onTextChange={handlePasswordChange}
-                                    isFocus={isPasswordFocus}
-                                    autoCapitalize={false}
-                                />
-                            </View>
-                            <View style={[styles.container, styles.btnContainer]}>
-                                <Button onPress={() => console.log("button pressed")}>
-                                    <Text style={[styles.baseText, styles.buttonText]}>
-                                        Зареєстуватися
-                                    </Text>
-                                </Button>
-                            </View>
-                            <View style={[styles.container, styles.loginContainer]}>
-                                <Text style={[styles.baseText, styles.passwordButtonText]}>
-                                    Вже є акаунт?&ensp;
-                                    <TouchableWithoutFeedback onPress={() => console.log('login btn pressed')}>
-                                        <Text style={styles.linkText}>Увійти</Text>
-                                    </TouchableWithoutFeedback>
-                                </Text>
-                            </View>
-                        </View>
+            <View style={styles.registrContainer}>
+                <View style={styles.avatar}>
+                    <AddIcon style={styles.iconAdd} />
+                </View>
+                <Text style={styles.title}>Реєстрація</Text>
+                <View style={styles.container}>
+                    <View style={styles.inputsCont} >
+                        <InputField
+                            value={loginText}
+                            placeholder="Логін"
+                            onFocus={() => setIsLoginFocus(true)}
+                            onBlur={() => setIsLoginFocus(false)}
+                            onTextChange={handleLoginChange}
+                            isFocus={isLoginFocus}
+                        />
+                        <InputField
+                            value={emailText}
+                            placeholder="Електронна пошта"
+                            onFocus={() => setIsEmailFocus(true)}
+                            onBlur={() => setIsEmailFocus(false)}
+                            onTextChange={handleEmailChange}
+                            isFocus={isEmailFocus}
+                        />
+                        <PasswordInput
+                            value={password}
+                            placeholder="Пароль"
+                            onFocus={() => setIsPasswordFocus(true)}
+                            onBlur={() => setIsPasswordFocus(false)}
+                            onTextChange={handlePasswordChange}
+                            isFocus={isPasswordFocus}
+                            autoCapitalize={false}
+                        />
                     </View>
-                </KeyboardAvoidingView>
-            </TouchableWithoutFeedback>
+                    <View style={[styles.container, styles.btnContainer]}>
+                        <Button onPress={() => console.log("button pressed")}>
+                            <Text style={[styles.baseText, styles.buttonText]}>
+                                Зареєстуватися
+                            </Text>
+                        </Button>
+                    </View>
+                    <View style={[styles.container, styles.loginContainer]}>
+                        <Text style={[styles.baseText, styles.passwordButtonText]}>
+                            Вже є акаунт?&ensp;
+                            <TouchableWithoutFeedback onPress={() => console.log('login btn pressed')}>
+                                <Text style={styles.linkText}>Увійти</Text>
+                            </TouchableWithoutFeedback>
+                        </Text>
+                    </View>
+                </View>
+            </View>
         </ImageBackground>
     )
 };
@@ -112,15 +98,15 @@ const styles = StyleSheet.create({
     },
     bgimage: {
         flex: 1,
-        width: SCREEN_WIDTH,
+        width: "100%",
+        height: "100%",
         justifyContent: "flex-end",
     },
     registrContainer: {
-        width: SCREEN_WIDTH,
+        width: "100%",
         height: 549,
         borderTopRightRadius: 25,
         borderTopLeftRadius: 25,
-        paddingHorizontal: 16,
         paddingTop: 92,
         backgroundColor: '#fff',
         alignSelf: "center",
