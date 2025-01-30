@@ -55,6 +55,7 @@ const RegistrationScreen = () => {
                         <InputField
                             value={emailText}
                             placeholder="Електронна пошта"
+                            keyboardType="email-address"
                             onFocus={() => setIsEmailFocus(true)}
                             onBlur={() => setIsEmailFocus(false)}
                             onTextChange={handleEmailChange}
