@@ -1,4 +1,5 @@
-import { TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity } from "react-native";
+import styles from "../styles/buttonStyles";
 
 
 const Button = ({ children, onPress, buttonStyle }) => {
@@ -9,13 +10,5 @@ const Button = ({ children, onPress, buttonStyle }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    button: {
-        borderRadius: 100,
-        backgroundColor: "#FF6C00",
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-    },
-});
 
 export default Button;

@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Text, TouchableOpacity } from "react-native"
 import InputField from "./InputField";
+import styles from "../styles/passwordInputStyles";
 
 const PasswordInput = (
     { value,
@@ -35,16 +36,5 @@ const PasswordInput = (
     )
 }
 
-const styles = StyleSheet.create({
-    toggleButtonText: {
-        color: "#1B4371",
-        fontWeight: "400",
-        fontSize: 16,
-        lineHeight: 18,
-    },
-    passwordButton: {
-        justifyContent: "space-between",
-    },
-});
 
 export default PasswordInput

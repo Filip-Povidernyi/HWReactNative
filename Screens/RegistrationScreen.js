@@ -6,6 +6,7 @@ import InputField from "../components/InputField";
 import PasswordInput from "../components/PasswordInput";
 import Button from "../components/Button"
 import styles from "../styles/registrationStyles.js"
+import { useNavigation } from "@react-navigation/native";
 
 
 
@@ -18,6 +19,7 @@ const RegistrationScreen = () => {
     const [password, setPassword] = useState("");
     const [isPasswordFocus, setIsPasswordFocus] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const navigation = useNavigation();
 
 
     const HandleSubmit = () => {
@@ -41,6 +43,7 @@ const RegistrationScreen = () => {
                     <View style={{
                         ...styles.registrContainer,
                         height: keyboardVisible ? 374 : 549,
+                        paddingTop: 92,
                     }}>
                         <View style={styles.avatar}>
                             <AddIcon style={styles.iconAdd} />
@@ -58,6 +61,7 @@ const RegistrationScreen = () => {
                                 />
                                 <InputField
                                     value={emailText}
+                                    autoCapitalize="none"
                                     placeholder="Електронна пошта"
                                     keyboardType="email-address"
                                     onFocus={() => { setIsEmailFocus(true); setKeyboardVisible(true) }}
@@ -72,21 +76,21 @@ const RegistrationScreen = () => {
                                     onBlur={() => { setIsPasswordFocus(false); setKeyboardVisible(false) }}
                                     onTextChange={(value) => setPassword(value)}
                                     isFocus={isPasswordFocus}
-                                    autoCapitalize={false}
+                                    autoCapitalize="none"
                                 />
                             </View>
-                            <View style={[styles.container, styles.btnContainer]}>
+                            <View style={styles.btnContainer}>
                                 <Button onPress={HandleSubmit}>
                                     <Text style={[styles.baseText, styles.buttonText]}>
-                                        Зареєстуватися
+                                        Зареєстpуватися
                                     </Text>
                                 </Button>
                             </View>
                             <View style={[styles.container, styles.loginContainer]}>
                                 <Text style={[styles.baseText, styles.passwordButtonText]}>
                                     Вже є акаунт?&ensp;
-                                    <TouchableWithoutFeedback onPress={() => console.log('login btn pressed')}>
-                                        <Text style={styles.linkText}>Увійти</Text>
+                                    <TouchableWithoutFeedback onPress={() => navigation.navigate("Login")}>
+                                        <Text style={styles.baseText}>Увійти</Text>
                                     </TouchableWithoutFeedback>
                                 </Text>
                             </View>
