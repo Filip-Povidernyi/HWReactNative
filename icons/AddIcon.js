@@ -1,19 +1,20 @@
-import React from "react";
-import Svg, { Rect, Circle, Path } from "react-native-svg";
-
-const AddIcon = () => {
-    return (
-        <Svg width="132" height="120" fill="none" >
-            <Rect width="120" height="120" rx="16" fill="#F6F6F6" />
-            <Circle cx="119.5" cy="93.5" r="12" fill="white" stroke="#FF6C00" />
-            <Path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M120 87H119V93H113V94H119V100H120V94H126V93H120V87Z"
-                fill="#FF6C00"
-            />
-        </Svg>
-    );
-};
-
+import React from "react"
+import Svg, { Circle, Path } from "react-native-svg"
+const AddIcon = (props) => (
+    <Svg
+        xmlns="http://www.w3.org/2000/svg"
+        width={25}
+        height={25}
+        fill="none"
+        {...props}
+    >
+        <Circle cx={12.5} cy={12.5} r={12} fill="#fff" stroke="#FF6C00" />
+        <Path
+            fill="#FF6C00"
+            fillRule="evenodd"
+            d="M13 6h-1v6H6v1h6v6h1v-6h6v-1h-6V6Z"
+            clipRule="evenodd"
+        />
+    </Svg>
+)
 export default AddIcon;

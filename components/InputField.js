@@ -3,6 +3,7 @@ import { StyleSheet, TextInput, View } from "react-native";
 const InputField = (
     {
         value,
+        keyboardType,
         onTextChange,
         placeholder,
         autoCapitalize,
@@ -23,6 +24,7 @@ const InputField = (
                 value={value}
                 onChangeText={onTextChange}
                 placeholder={placeholder}
+                keyboardType={keyboardType}
                 placeholderTextColor="#BDBDBD"
                 autoCapitalize={autoCapitalize}
                 autoCorrect={false}
