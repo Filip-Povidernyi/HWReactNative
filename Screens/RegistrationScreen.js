@@ -27,7 +27,6 @@ const RegistrationScreen = () => {
         setLoginText("");
         setEmailText("");
         setPassword("");
-        console.log(keyboardVisible)
     };
 
     return (
