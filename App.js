@@ -16,7 +16,7 @@ export default App = () => {
   };
 
   return (
-    <View>
+    <View style={{ flex: 1, }}>
       <RegistrationScreen />
     </View>
   )
