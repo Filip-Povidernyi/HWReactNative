@@ -1,4 +1,6 @@
-import { StyleSheet, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
+import styles from "../styles/iputFieldStyles";
+import { colors } from "../styles/colorConstantStyle";
 
 const InputField = (
     {
@@ -25,7 +27,7 @@ const InputField = (
                 onChangeText={onTextChange}
                 placeholder={placeholder}
                 keyboardType={keyboardType}
-                placeholderTextColor="#BDBDBD"
+                placeholderTextColor={colors.text_gray}
                 autoCapitalize={autoCapitalize}
                 autoCorrect={false}
                 textContentType={contentType}
@@ -39,34 +41,6 @@ const InputField = (
 
     )
 };
-
-const styles = StyleSheet.create({
-
-    inputTextContainer: {
-        height: 50,
-        alignItems: "center",
-        flexDirection: "row",
-        borderColor: "#E8E8E8",
-        borderRadius: 8,
-        borderWidth: 1,
-        backgroundColor: "#F6F6F6",
-        paddingHorizontal: 16,
-        fontFamily: "Roboto-Regular",
-        fontSize: 16,
-        fontWeight: 400,
-    },
-    onFocused: {
-        borderColor: "#FF6C00",
-    },
-    coverBtnContainer: {
-        marginLeft: 16,
-    },
-    baseText: {
-        paddingVertical: 10,
-        fontSize: 16,
-        color: "#212121",
-    },
-});
 
 
 export default InputField;
