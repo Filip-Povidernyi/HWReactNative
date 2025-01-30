@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ImageBackground, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Dimensions, ImageBackground, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import image from "../assets/images/PhotoBG.png"
 import AddIcon from "../icons/AddIcon";
 import InputField from "../components/InputField";
