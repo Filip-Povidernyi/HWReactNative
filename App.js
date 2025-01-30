@@ -16,7 +16,7 @@ export default App = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       <RegistrationScreen />
     </View>
   )
