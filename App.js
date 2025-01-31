@@ -15,17 +15,17 @@ import { ActivityIndicator, View } from "react-native";
 import styles from "./styles/appStyles.js";
 import AuthNavigator from "./navigation/AuthNavigator.js";
 import BottomTabNavigator from "./navigation/BottomTabNavigator.js";
+import { AppProvider, useAppContext } from "./components/AppProvider.js";
 
-// const MainStack = createStackNavigator();
 
-export default App = () => {
+const App = () => {
 
   const [fontsLoaded] = useFonts({
     'Roboto-Medium': require('./assets/fonts/Roboto/static/Roboto-Medium.ttf'),
     'Roboto-Regular': require('./assets/fonts/Roboto/static/Roboto-Regular.ttf'),
   });
 
-  const isLoggedIn = true;
+  const { isLogined } = useAppContext();
 
   if (!fontsLoaded) {
     return (
@@ -38,21 +38,23 @@ export default App = () => {
 
   return (
     <NavigationContainer>
-      {isLoggedIn ? (
+      {isLogined ? (
         <BottomTabNavigator />
       ) : (
         <AuthNavigator />
       )}
       {/* <MainStack.Navigator>
-        <MainStack.Screen
-          name="Map"
-          component={MapScreen}
-        />
-        <MainStack.Screen
-          name="Comments"
-          component={CommentsScreen}
-        />
-      </MainStack.Navigator> */}
+          <MainStack.Screen
+            name="Map"
+            component={MapScreen}
+          />
+          <MainStack.Screen
+            name="Comments"
+            component={CommentsScreen}
+          />
+        </MainStack.Navigator> */}
     </NavigationContainer>
   )
 };
+
+export default App;

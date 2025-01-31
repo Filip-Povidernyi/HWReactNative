@@ -6,6 +6,7 @@ import PasswordInput from "../components/PasswordInput";
 import Button from "../components/Button";
 import styles from "../styles/registrationStyles";
 import { useNavigation } from "@react-navigation/native";
+import { useAppContext } from "../components/AppProvider";
 
 
 
@@ -17,13 +18,15 @@ const LoginScreen = () => {
     const [isPasswordFocus, setIsPasswordFocus] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const navigation = useNavigation();
+    const { setIsLogined } = useAppContext();
 
 
     const HandleSubmit = () => {
         console.log([emailText, password]);
         setEmailText("");
         setPassword("");
-        navigation.navigate("Home");
+        setIsLogined(true);
+        // navigation.navigate("Home");
     };
 
     return (

@@ -2,7 +2,7 @@ import { Text, View } from "react-native"
 
 const ProfileScreen = () => {
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <Text>Profile Screen</Text>
         </View>
     )
