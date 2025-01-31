@@ -9,13 +9,20 @@ import PostsIcon from "../icons/PostsIcon";
 import styles from "../styles/navigaterStyles";
 import CrossIcon from "../icons/CrossIcon";
 import BackArrow from "../icons/BackArrow";
-import TrashIcon from "../icons/TrashIcon";
-import { AntDesign } from "@expo/vector-icons";
 import ProfileIcon from "../icons/ProfileIcon";
+import { useAppContext } from "../components/AppProvider";
+import { useNavigation } from "@react-navigation/native";
 
 const Tabs = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
+    const { setIsLogined } = useAppContext();
+    const navigation = useNavigation();
+
+    const handleLoginOut = () => {
+        setIsLogined(false);
+    }
+
     return (
         <Tabs.Navigator
             initialRouteName="Home"
@@ -33,10 +40,10 @@ const BottomTabNavigator = () => {
             <Tabs.Screen
                 name="Home"
                 component={PostsScreen}
-                options={({ navigation }) => ({
+                options={{
                     title: "Публікації",
                     headerRight: () => (
-                        <Button onPress={() => navigation.navigate("Login")}>
+                        <Button onPress={() => handleLoginOut(navigation)}>
                             <LogOutIcon />
                         </ Button>
                     ),
@@ -48,13 +55,13 @@ const BottomTabNavigator = () => {
                             <PostsIcon strokeColor={focused ? colors.orange : colors.black_80} />
                         </ Button>
                     )
-                })}
+                }}
 
             />
             <Tabs.Screen
                 name="CreatePosts"
                 component={CreatePostsScreen}
-                options={({ navigation }) => ({
+                options={{
                     title: "Створити публікацію",
                     headerStyle: { backgroundColor: colors.white, },
                     headerTitleStyle: styles.titleHeader,
@@ -67,12 +74,12 @@ const BottomTabNavigator = () => {
                         <CrossIcon />
                     ),
                     tabBarStyle: { display: "none" },
-                })}
+                }}
             />
             <Tabs.Screen
                 name="Profile"
                 component={ProfileScreen}
-                options={({ navigation }) => ({
+                options={{
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <Button
@@ -81,7 +88,7 @@ const BottomTabNavigator = () => {
                             <ProfileIcon strokeColor={focused ? colors.orange : colors.black_80} />
                         </ Button>
                     ),
-                })}
+                }}
             />
         </Tabs.Navigator>
     );

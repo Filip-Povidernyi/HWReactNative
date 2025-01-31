@@ -7,6 +7,7 @@ import PasswordInput from "../components/PasswordInput";
 import styles from "../styles/registrationStyles.js"
 import { useNavigation } from "@react-navigation/native";
 import Button from "../components/Button";
+import { useAppContext } from "../components/AppProvider.js";
 
 
 
@@ -20,14 +21,16 @@ const RegistrationScreen = () => {
     const [isPasswordFocus, setIsPasswordFocus] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const navigation = useNavigation();
+    const { setIsLogined } = useAppContext();
 
 
     const HandleSubmit = () => {
         console.log([loginText, emailText, password]);
-        navigation.navigate("Home", {});
+        // navigation.navigate("Home", {});
         setLoginText("");
         setEmailText("");
         setPassword("");
+        setIsLogined(true);
     };
 
     return (

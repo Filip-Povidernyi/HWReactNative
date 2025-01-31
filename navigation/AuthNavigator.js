@@ -15,7 +15,7 @@ const AuthNavigator = () => {
     const navigation = useNavigation();
 
     return (
-        <MainStack.Navigator>
+        <MainStack.Navigator initialRouteName="Login">
             <MainStack.Screen
                 name="Registration"
                 component={RegistrationScreen}
