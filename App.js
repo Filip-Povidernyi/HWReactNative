@@ -1,12 +1,22 @@
 import React from "react";
-import RegistrationScreen from "./Screens/RegistrationScreen";
-import LoginScreen from "./Screens/LoginScreen";
 import { useFonts } from "expo-font";
 import { NavigationContainer } from "@react-navigation/native";
 import 'react-native-gesture-handler';
-import { createStackNavigator } from "@react-navigation/stack";
+// import { createStackNavigator } from "@react-navigation/stack";
+// import ProfileScreen from "./Screens/ProfileScreen";
+// import PostsScreen from "./Screens/PostsScreen";
+// import MapScreen from "./Screens/MapScreen";
+// import CreatePostsScreen from "./Screens/CreatePostsScreen";
+// import CommentsScreen from "./Screens/CommentsScreen";
+// import Button from "./components/Button";
+// import LogOutIcon from "./icons/LogOutIcon";
+// import { colors } from "./styles/colorConstantStyle";
+import { ActivityIndicator, View } from "react-native";
+import styles from "./styles/appStyles.js";
+import AuthNavigator from "./navigation/AuthNavigator.js";
+import BottomTabNavigator from "./navigation/BottomTabNavigator.js";
 
-const MainStack = createStackNavigator();
+// const MainStack = createStackNavigator();
 
 export default App = () => {
 
@@ -15,24 +25,34 @@ export default App = () => {
     'Roboto-Regular': require('./assets/fonts/Roboto/static/Roboto-Regular.ttf'),
   });
 
+  const isLoggedIn = true;
+
   if (!fontsLoaded) {
-    return null;
+    return (
+      <View style={styles.section}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   };
 
+
   return (
-    <NavigationContainer style={{ flex: 1, }}>
-      <MainStack.Navigator>
+    <NavigationContainer>
+      {isLoggedIn ? (
+        <BottomTabNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
+      {/* <MainStack.Navigator>
         <MainStack.Screen
-          name="Registration"
-          component={RegistrationScreen}
-          options={{ headerShown: false, }}
+          name="Map"
+          component={MapScreen}
         />
         <MainStack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false, }}
+          name="Comments"
+          component={CommentsScreen}
         />
-      </MainStack.Navigator>
+      </MainStack.Navigator> */}
     </NavigationContainer>
   )
 };

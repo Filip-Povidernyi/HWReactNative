@@ -4,9 +4,9 @@ import image from "../assets/images/PhotoBG.png"
 import AddIcon from "../icons/AddIcon";
 import InputField from "../components/InputField";
 import PasswordInput from "../components/PasswordInput";
-import Button from "../components/Button"
 import styles from "../styles/registrationStyles.js"
 import { useNavigation } from "@react-navigation/native";
+import Button from "../components/Button";
 
 
 
@@ -24,6 +24,7 @@ const RegistrationScreen = () => {
 
     const HandleSubmit = () => {
         console.log([loginText, emailText, password]);
+        navigation.navigate("Home", {});
         setLoginText("");
         setEmailText("");
         setPassword("");
@@ -79,7 +80,7 @@ const RegistrationScreen = () => {
                                 />
                             </View>
                             <View style={styles.btnContainer}>
-                                <Button onPress={HandleSubmit}>
+                                <Button onPress={HandleSubmit} buttonStyle={styles.button}>
                                     <Text style={[styles.baseText, styles.buttonText]}>
                                         Зареєстpуватися
                                     </Text>
