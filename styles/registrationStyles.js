@@ -65,6 +65,12 @@ const styles = StyleSheet.create({
     loginContainer: {
         alignItems: "center",
     },
+    button: {
+        borderRadius: 100,
+        backgroundColor: colors.orange,
+        paddingVertical: 16,
+        paddingHorizontal: 32,
+    },
 });
 
 export default styles;

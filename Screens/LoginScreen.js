@@ -23,6 +23,7 @@ const LoginScreen = () => {
         console.log([emailText, password]);
         setEmailText("");
         setPassword("");
+        navigation.navigate("Home");
     };
 
     return (
@@ -64,7 +65,7 @@ const LoginScreen = () => {
                                 />
                             </View>
                             <View style={styles.btnContainer}>
-                                <Button onPress={HandleSubmit}>
+                                <Button onPress={HandleSubmit} buttonStyle={styles.button}>
                                     <Text style={[styles.baseText, styles.buttonText]}>
                                         Увійти
                                     </Text>
