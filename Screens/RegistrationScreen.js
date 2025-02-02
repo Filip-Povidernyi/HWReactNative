@@ -26,7 +26,6 @@ const RegistrationScreen = () => {
 
     const HandleSubmit = () => {
         console.log([loginText, emailText, password]);
-        // navigation.navigate("Home", {});
         setLoginText("");
         setEmailText("");
         setPassword("");

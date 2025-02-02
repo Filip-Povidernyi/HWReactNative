@@ -13,6 +13,7 @@ import ProfileIcon from "../icons/ProfileIcon";
 import { useAppContext } from "../components/AppProvider";
 import { useNavigation } from "@react-navigation/native";
 
+
 const Tabs = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
