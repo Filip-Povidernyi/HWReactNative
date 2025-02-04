@@ -4,16 +4,39 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../styles/colorConstantStyle";
 import MessageIcon from "../icons/MessageIcon";
 import PinIcon from "../icons/PinIcon";
+import { useSelector } from "react-redux";
+import selectUser from "../redux/redusers/userSelectors";
+import { db } from "../config";
+import { onSnapshot } from "firebase/firestore";
 
 const PostsScreen = ({ navigation, route }) => {
 
+    const user = useSelector(selectUser);
     const [posts, setPosts] = useState([]);
 
+    const getAllPosts = async () => {
+        const q = query(collection(db, "posts"));
+
+        onSnapshot(q, async (querySnapshot) => {
+            const posts = await Promise.all(
+                querySnapshot.docs.map(async (doc) => {
+                    const coll = collection(db, `posts/${doc.id}/comments`);
+                    const snapshot = await getCountFromServer(coll);
+
+                    return {
+                        ...doc.data(),
+                        postId: doc.id,
+                        commentCount: snapshot.data().count,
+                    };
+                })
+            );
+            setPosts(posts);
+        });
+    };
+
     useEffect(() => {
-        if (route.params) {
-            setPosts((prevState) => [...prevState, route.params]);
-        }
-    }, [route.params]);
+        getAllPosts();
+    }, []);
 
     return (
         <GestureHandlerRootView>
@@ -25,8 +48,8 @@ const PostsScreen = ({ navigation, route }) => {
                         resizeMode="cover"
                     />
                     <View style={styles.userData}>
-                        <Text style={styles.userName}>Natali Romanova</Text>
-                        <Text style={styles.userEmail}>email@example.com</Text>
+                        <Text style={styles.userName}>{user.name}</Text>
+                        <Text style={styles.userEmail}>{user.email}</Text>
                     </View>
                 </View>
 
@@ -49,11 +72,14 @@ const PostsScreen = ({ navigation, route }) => {
                                     <TouchableOpacity
                                         style={{ flexDirection: "row", alignItems: "center" }}
                                         onPress={() =>
-                                            navigation.navigate("Comments", { post: item })
+                                            navigation.navigate("Comments", {
+                                                postId: item.postId,
+                                                uri: item.photo,
+                                            })
                                         }
                                     >
                                         <MessageIcon />
-                                        <Text style={styles.count}>0</Text>
+                                        <Text style={styles.count}>{item.commentCount || 0}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         onPress={() =>

@@ -11,14 +11,15 @@ import styles from "../styles/navigaterStyles";
 import { colors } from "../styles/colorConstantStyle";
 import Button from "../components/Button";
 import BackArrow from "../icons/BackArrow";
+import { useSelector } from "react-redux";
+import { selectIsAuth } from "../redux/redusers/userSelectors";
 
 
 const MainStack = createStackNavigator();
 
 const StackNavigation = () => {
-    const { isLogined } = useAppContext();
+    const isLogined = useSelector(selectIsAuth);
 
-    const navigation = useNavigation();
 
     return (
         <MainStack.Navigator
@@ -37,17 +38,31 @@ const StackNavigation = () => {
                         name="Home"
                         component={BottomTabNavigator}
                         options={{
-                            title: "",
+                            headerShown: false,
                         }}
                     />
                     <MainStack.Screen
                         name="Map"
                         component={MapScreen}
+                        options={({ navigation }) => ({
+                            headerShown: true,
+                            title: "Локація",
+                            headerLeft: () => (
+                                <Button onPress={() => navigation.goBack()}>
+                                    <BackArrow />
+                                </Button>
+                            ),
+                            headerRightContainerStyle: { paddingRight: 16 },
+                            headerLeftContainerStyle: { paddingLeft: 16 },
+                            headerStyle: styles.tabHeader,
+                            headerTitleStyle: styles.tabHeaderTitle,
+                            headerTitleAlign: "center",
+                        })}
                     />
                     <MainStack.Screen
                         name="Comments"
                         component={CommentsScreen}
-                        options={{
+                        options={({ navigation }) => ({
                             title: "Коментарі",
                             headerStyle: { backgroundColor: colors.white, },
                             headerTitleStyle: styles.titleHeader,
@@ -56,7 +71,7 @@ const StackNavigation = () => {
                                     <BackArrow />
                                 </Button>
                             ),
-                        }}
+                        })}
                     />
                 </Fragment>
             ) : (

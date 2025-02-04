@@ -5,31 +5,29 @@ import AddIcon from "../icons/AddIcon";
 import InputField from "../components/InputField";
 import PasswordInput from "../components/PasswordInput";
 import styles from "../styles/registrationStyles.js"
-import { useNavigation } from "@react-navigation/native";
 import Button from "../components/Button";
-import { useAppContext } from "../components/AppProvider.js";
+import { useDispatch } from "react-redux";
+import { signUp } from "../redux/redusers/userOperations.js";
 
 
 
-const RegistrationScreen = () => {
+const RegistrationScreen = ({ navigation, route }) => {
 
-    const [loginText, setLoginText] = useState("");
-    const [emailText, setEmailText] = useState("");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
     const [isLoginFocus, setIsLoginFocus] = useState(false);
     const [isEmailFocus, setIsEmailFocus] = useState(false);
     const [password, setPassword] = useState("");
     const [isPasswordFocus, setIsPasswordFocus] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
-    const navigation = useNavigation();
-    const { setIsLogined } = useAppContext();
+
+    const dispatch = useDispatch()
 
 
     const HandleSubmit = () => {
-        console.log([loginText, emailText, password]);
-        setLoginText("");
-        setEmailText("");
-        setPassword("");
-        setIsLogined(true);
+        // console.log([name, email, password]);
+        dispatch(signUp({ email, password, name }));
+        navigation.navigate("Home")
     };
 
     return (
@@ -54,21 +52,21 @@ const RegistrationScreen = () => {
                         <View style={styles.container}>
                             <View style={styles.inputsCont} >
                                 <InputField
-                                    value={loginText}
+                                    value={name}
                                     placeholder="Логін"
                                     onFocus={() => { setIsLoginFocus(true); setKeyboardVisible(true) }}
                                     onBlur={() => { setIsLoginFocus(false); setKeyboardVisible(false) }}
-                                    onTextChange={(value) => setLoginText(value)}
+                                    onTextChange={(value) => setName(value)}
                                     isFocus={isLoginFocus}
                                 />
                                 <InputField
-                                    value={emailText}
+                                    value={email}
                                     autoCapitalize="none"
                                     placeholder="Електронна пошта"
                                     keyboardType="email-address"
                                     onFocus={() => { setIsEmailFocus(true); setKeyboardVisible(true) }}
                                     onBlur={() => { setIsEmailFocus(false); setKeyboardVisible(false) }}
-                                    onTextChange={(value) => setEmailText(value)}
+                                    onTextChange={(value) => setEmail(value)}
                                     isFocus={isEmailFocus}
                                 />
                                 <PasswordInput

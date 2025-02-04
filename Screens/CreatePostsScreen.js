@@ -12,7 +12,6 @@ import {
     TextInput,
     Keyboard,
     Platform,
-    StyleSheet,
     Button,
 } from "react-native";
 
@@ -22,13 +21,23 @@ import CameraIcon from "../icons/CameraIcon";
 import PinIcon from "../icons/PinIcon";
 import TrashIcon from "../icons/TrashIcon";
 import styles from "../styles/createPostStyle";
+import { useSelector } from "react-redux";
+import selectUser from "../redux/redusers/userSelectors";
+import { db, storage } from "../config";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { addDoc, collection } from "firebase/firestore";
 
 
 const CreatePostsScreen = ({ navigation }) => {
+    const user = useSelector(selectUser);
     const [photo, setPhoto] = useState(null);
     const [title, setTitle] = useState("");
     const [place, setPlace] = useState("");
+    const [location, setLocation] = useState(null);
+    const [error, setError] = useState("")
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
+    const [facing, setFacing] = useState("back");
     const [permission, requestPermission] = useCameraPermissions();
     const camera = useRef(null);
 
@@ -68,27 +77,60 @@ const CreatePostsScreen = ({ navigation }) => {
     const takePicture = async () => {
         if (!camera) return;
 
-        const cameraRes = await camera?.current?.takePictureAsync();
-        if (!cameraRes) return;
+        const location = await Location.getCurrentPositionAsync({});
+        setLocation(location);
 
-        await MediaLibrary.saveToLibraryAsync(cameraRes?.uri);
-        setPhoto(cameraRes?.uri);
+        const { uri } = await camera.current.takePictureAsync();
+        await MediaLibrary.saveToLibraryAsync(uri);
+        setPhoto(uri);
     };
 
     const isAllowed = !!photo && !!title && !!place;
 
+    const uploadPhoto = async () => {
+        const response = await fetch(photo || "");
+
+        const file = await response.blob();
+
+        const photoId = "ph_" + Math.random() * 1000;
+        const imagesRef = ref(storage, `postImages/${photoId}`);
+
+        await uploadBytesResumable(imagesRef, file);
+
+        const url = await getDownloadURL(imagesRef);
+
+        return url;
+    };
+
+    const uploadPost = async () => {
+        const photo = await uploadPhoto();
+
+        try {
+            await addDoc(collection(db, "posts"), {
+                photo,
+                title,
+                place,
+                location: location.coords,
+                uid: user.id,
+            });
+        } catch (error) {
+            setError(error.message || "Error uploading post");
+        }
+    };
+
     const onSubmit = async () => {
-        const location = await Location.getCurrentPositionAsync({});
-        const coords = {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-        };
+        try {
+            console.log("Uploading post...");
+            await uploadPost();
 
-        navigation.navigate("Home", { photo, title, place, coords });
+            navigation.navigate("Home");
 
-        setTitle("");
-        setPhoto(null);
-        setPlace("");
+            setTitle("");
+            setPhoto(null);
+            setPlace("");
+        } catch (error) {
+            console.error("Error while submitting post:", error);
+        }
     };
 
     const onReset = async () => {
@@ -102,7 +144,7 @@ const CreatePostsScreen = ({ navigation }) => {
             <View style={styles.createPostsContainer}>
                 <View>
                     <View style={styles.cameraContainer}>
-                        <CameraView style={styles.camera} ref={camera}>
+                        <CameraView style={styles.camera} ref={camera} facing={facing}>
                             {photo && (
                                 <View style={styles.takePhotoContainer}>
                                     <Image style={styles.camera} source={{ uri: photo }} />
@@ -116,7 +158,7 @@ const CreatePostsScreen = ({ navigation }) => {
                                 activeOpacity={0.8}
                                 onPress={takePicture}
                             >
-                                <CameraIcon />
+                                <CameraIcon size={24} color={photo ? colors.white : colors.underline_gray} />
                             </TouchableOpacity>
                         </CameraView>
                     </View>
@@ -131,6 +173,8 @@ const CreatePostsScreen = ({ navigation }) => {
                             style={styles.createPostInput}
                             placeholder="Назва..."
                             placeholderTextColor={colors.text_gray}
+                            onFocus={() => setKeyboardVisible(true)}
+                            onBlur={() => setKeyboardVisible(false)}
                             value={title}
                             onChangeText={(text) => setTitle(text)}
                         />
@@ -139,6 +183,8 @@ const CreatePostsScreen = ({ navigation }) => {
                             <TextInput
                                 style={{ ...styles.createPostInput, paddingLeft: 28 }}
                                 placeholder="Місцевість..."
+                                onFocus={() => setKeyboardVisible(true)}
+                                onBlur={() => setKeyboardVisible(false)}
                                 placeholderTextColor={colors.text_gray}
                                 value={place}
                                 onChangeText={(text) => setPlace(text)}

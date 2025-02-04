@@ -7,26 +7,26 @@ import Button from "../components/Button";
 import styles from "../styles/registrationStyles";
 import { useNavigation } from "@react-navigation/native";
 import { useAppContext } from "../components/AppProvider";
+import { useDispatch } from "react-redux";
+import { signIn } from "../redux/redusers/userOperations";
 
 
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
 
-    const [emailText, setEmailText] = useState("");
+    const [email, setEmail] = useState("");
     const [isEmailFocus, setIsEmailFocus] = useState(false);
     const [password, setPassword] = useState("");
     const [isPasswordFocus, setIsPasswordFocus] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
-    const navigation = useNavigation();
-    const { setIsLogined } = useAppContext();
+
+    const dispatch = useDispatch();
 
 
     const HandleSubmit = () => {
-        console.log([emailText, password]);
-        setEmailText("");
-        setPassword("");
-        setIsLogined(true);
-        // navigation.navigate("Home");
+        dispatch(signIn({ email, password }));
+        setEmail(email);
+        setPassword(password);
     };
 
     return (
@@ -49,12 +49,12 @@ const LoginScreen = () => {
                             <View style={styles.inputsCont} >
                                 <InputField
                                     autoCapitalize="none"
-                                    value={emailText}
+                                    value={email}
                                     placeholder="Електронна пошта"
                                     keyboardType="email-address"
                                     onFocus={() => { setIsEmailFocus(true); setKeyboardVisible(true) }}
                                     onBlur={() => { setIsEmailFocus(false); setKeyboardVisible(false) }}
-                                    onTextChange={(value) => setEmailText(value)}
+                                    onTextChange={(value) => setEmail(value)}
                                     isFocus={isEmailFocus}
                                 />
                                 <PasswordInput
@@ -77,7 +77,9 @@ const LoginScreen = () => {
                             <View style={[styles.container, styles.loginContainer]}>
                                 <Text style={[styles.baseText, styles.passwordButtonText]}>
                                     Немає акаунту?&ensp;
-                                    <TouchableWithoutFeedback onPress={() => navigation.navigate("Registration")}>
+                                    <TouchableWithoutFeedback onPress={() => {
+                                        navigation.navigate("Registration", { userEmail: email })
+                                    }}>
                                         <Text style={styles.linkText}>Зареєстpуватися</Text>
                                     </TouchableWithoutFeedback>
                                 </Text>
