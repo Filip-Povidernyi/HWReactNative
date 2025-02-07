@@ -10,24 +10,23 @@ import styles from "../styles/navigaterStyles";
 import CrossIcon from "../icons/CrossIcon";
 import BackArrow from "../icons/BackArrow";
 import ProfileIcon from "../icons/ProfileIcon";
-import { useAppContext } from "../components/AppProvider";
-import { useNavigation } from "@react-navigation/native";
+import { useDispatch } from "react-redux";
+import { signOutUser } from "../redux/redusers/userOperations";
 
 
 const Tabs = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
-    const { setIsLogined } = useAppContext();
-    const navigation = useNavigation();
+    const dispatch = useDispatch();
 
     const handleLoginOut = () => {
-        setIsLogined(false);
+        dispatch(signOutUser());
     }
 
     return (
         <Tabs.Navigator
-            initialRouteName="Home"
-            screenOptions={{
+            initialRouteName="Posts"
+            screenOptions={({ navigation }) => ({
                 headerRightContainerStyle: { paddingRight: 16 },
                 headerLeftContainerStyle: { paddingLeft: 16 },
                 headerStyle: styles.tabHeader,
@@ -36,12 +35,12 @@ const BottomTabNavigator = () => {
                 tabBarShowLabel: false,
                 tabBarStyle: styles.tabBar,
                 tabBarItemStyle: styles.tabIcon,
-            }}
+            })}
             backBehavior="history">
             <Tabs.Screen
-                name="Home"
+                name="Posts"
                 component={PostsScreen}
-                options={{
+                options={({ navigation }) => ({
                     title: "Публікації",
                     headerRight: () => (
                         <Button onPress={() => handleLoginOut(navigation)}>
@@ -51,23 +50,29 @@ const BottomTabNavigator = () => {
                     headerLeft: null,
                     tabBarIcon: ({ focused }) => (
                         <Button
-                            onPress={() => navigation.navigate("Home")}
+                            onPress={() => navigation.navigate("Posts")}
                         >
                             <PostsIcon strokeColor={focused ? colors.orange : colors.black_80} />
                         </ Button>
                     )
-                }}
+                })}
 
             />
             <Tabs.Screen
                 name="CreatePosts"
                 component={CreatePostsScreen}
-                options={{
+                options={({ navigation }) => ({
                     title: "Створити публікацію",
                     headerStyle: { backgroundColor: colors.white, },
                     headerTitleStyle: styles.titleHeader,
                     headerLeft: () => (
-                        <Button onPress={() => navigation.goBack()}>
+                        <Button onPress={() => {
+                            if (navigation.canGoBack()) {
+                                navigation.goBack();
+                            } else {
+                                navigation.navigate("Posts");
+                            }
+                        }}>
                             <BackArrow />
                         </Button>
                     ),
@@ -75,12 +80,12 @@ const BottomTabNavigator = () => {
                         <CrossIcon />
                     ),
                     tabBarStyle: { display: "none" },
-                }}
+                })}
             />
             <Tabs.Screen
                 name="Profile"
                 component={ProfileScreen}
-                options={{
+                options={({ navigation }) => ({
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
                         <Button
@@ -89,7 +94,7 @@ const BottomTabNavigator = () => {
                             <ProfileIcon strokeColor={focused ? colors.orange : colors.black_80} />
                         </ Button>
                     ),
-                }}
+                })}
             />
         </Tabs.Navigator>
     );

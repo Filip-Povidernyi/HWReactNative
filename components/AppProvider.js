@@ -1,16 +1,16 @@
-import { createContext, useContext, useState } from "react";
+// import { createContext, useContext, useState } from "react";
 
-const AppContext = createContext();
+// const AppContext = createContext();
 
-export const AppProvider = ({ children }) => {
+// export const AppProvider = ({ children }) => {
 
-    const [isLogined, setIsLogined] = useState(false);
+//     const [isLogined, setIsLogined] = useState(false);
 
-    return (
-        <AppContext.Provider value={{ isLogined, setIsLogined }}>
-            {children}
-        </AppContext.Provider>
-    );
-};
+//     return (
+//         <AppContext.Provider value={{ isLogined, setIsLogined }}>
+//             {children}
+//         </AppContext.Provider>
+//     );
+// };
 
-export const useAppContext = () => useContext(AppContext);
+// export const useAppContext = () => useContext(AppContext);
