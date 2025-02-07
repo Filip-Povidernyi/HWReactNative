@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { signUp, signIn, isLogined, signOutUser } from "./userOperations";
 
+
 const initialState = {
     userInfo: {
         uid: "",
         email: "",
-        name: "",
+        displayName: "",
+        password: "",
         profilePhoto: "",
         isAuth: false,
         isLoading: false,
@@ -22,8 +24,9 @@ const userSlice = createSlice({
             state.userInfo.isLoading = false;
             state.userInfo.uid = action.payload.uid;
             state.userInfo.email = action.payload.email;
-            state.userInfo.name = action.payload.displayName;
-            state.userInfo.profilePhoto = action.payload?.photoURL;
+            state.userInfo.displayName = action.payload.displayName;
+            state.userInfo.password = action.payload.password;
+            state.userInfo.profilePhoto = action.payload.photoURL;
             state.userInfo.isAuth = true;
         },
     },
@@ -37,8 +40,9 @@ const userSlice = createSlice({
                 state.userInfo.isLoading = false;
                 state.userInfo.uid = action.payload.uid || "";
                 state.userInfo.email = action.payload.email || "";
-                state.userInfo.name = action.payload.name;
-                state.userInfo.profilePhoto = action.payload.photoURL;
+                state.userInfo.displayName = action.payload.displayName || "";
+                state.userInfo.password = action.payload.password || "";
+                state.userInfo.profilePhoto = action.payload.photoURL || "";
                 state.userInfo.isAuth = true;
             })
             .addCase(signUp.rejected, (state, action) => {
@@ -54,8 +58,9 @@ const userSlice = createSlice({
                 state.userInfo.isAuth = true;
                 state.userInfo.uid = action.payload.uid;
                 state.userInfo.email = action.payload.email;
-                state.userInfo.name = action.payload.name;
+                state.userInfo.displayName = action.payload.displayName;
                 state.userInfo.profilePhoto = action.payload.photoURL;
+                state.userInfo.password = action.payload.password;
             })
             .addCase(signIn.rejected, (state, action) => {
                 state.userInfo.isLoading = false;
@@ -72,7 +77,8 @@ const userSlice = createSlice({
                 state.userInfo.profilePhoto = null;
                 state.userInfo.email = null;
                 state.userInfo.uid = null;
-                state.userInfo.name = null;
+                state.userInfo.displayName = null;
+                state.userInfo.password = null;
             })
             .addCase(signOutUser.rejected, (state, action) => {
                 state.userInfo.isLoading = false;
@@ -86,7 +92,7 @@ const userSlice = createSlice({
                 state.userInfo.isLoading = false;
                 state.userInfo.isAuth = true;
                 state.userInfo.email = action.payload.email;
-                state.userInfo.name = action.payload.name;
+                state.userInfo.displayName = action.payload.displayName;
                 state.userInfo.uid = action.payload.uid;
                 state.userInfo.profilePhoto = action.payload.profilePhoto;
             })

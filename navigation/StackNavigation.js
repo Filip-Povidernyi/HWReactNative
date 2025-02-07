@@ -1,8 +1,6 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import RegistrationScreen from "../Screens/RegistrationScreen";
 import LoginScreen from "../Screens/LoginScreen"
-import { useNavigation } from "@react-navigation/native";
-import { useAppContext } from "../components/AppProvider";
 import BottomTabNavigator from "./BottomTabNavigator";
 import { Fragment } from "react";
 import MapScreen from "../Screens/MapScreen";
@@ -18,8 +16,8 @@ import { selectIsAuth } from "../redux/redusers/userSelectors";
 const MainStack = createStackNavigator();
 
 const StackNavigation = () => {
-    const isLogined = useSelector(selectIsAuth);
 
+    const isLogined = useSelector(selectIsAuth);
 
     return (
         <MainStack.Navigator

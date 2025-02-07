@@ -1,14 +1,14 @@
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
 import { auth } from "../config";
 import { setUserInfo, clearUserInfo } from "../redux/redusers/userSlice";
-import { addUser, getUser } from "./firestore";
+import { addUser } from "./firestore";
 
-export const registerDB = async ({ email, password }, name) => {
+export const registerDB = async (email, password, name) => {
     try {
         const credentials = await createUserWithEmailAndPassword(auth, email, password);
         const user = credentials.user;
 
-        await addUser(user.uid, { uid: user.uid, name: name || '', email: user.email || '' })
+        await addUser(user.uid, { uid: user.uid, name: name || '', email: user.email || '', password })
     } catch (error) {
         console.log("Registration Error: ", error);
     };
@@ -52,7 +52,7 @@ export const authStateChanged = (dispatch) => {
                 email: user.email || '',
             }))
         } else {
-            dispatch(clearUserInfo);
+            dispatch(clearUserInfo());
         };
     });
 };

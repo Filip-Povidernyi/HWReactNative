@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { ImageBackground, Keyboard, KeyboardAvoidingView, Platform, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Image, ImageBackground, Keyboard, KeyboardAvoidingView, Platform, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import image from "../assets/images/PhotoBG.png"
-import AddIcon from "../icons/AddIcon";
 import InputField from "../components/InputField";
 import PasswordInput from "../components/PasswordInput";
 import styles from "../styles/registrationStyles.js"
 import Button from "../components/Button";
 import { useDispatch } from "react-redux";
 import { signUp } from "../redux/redusers/userOperations.js";
+import * as ImagePicker from 'expo-image-picker';
+import uploadImageToCloudinary from "../components/CloudinaryUpload.js";
 
 
 
@@ -20,14 +21,42 @@ const RegistrationScreen = ({ navigation, route }) => {
     const [password, setPassword] = useState("");
     const [isPasswordFocus, setIsPasswordFocus] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [selectedAvatar, setSelectedAvatar] = useState('https://res.cloudinary.com/dmlknrojl/image/upload/v1738920244/sobvsvglbnxt0vljueeh.png');
+    const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const dispatch = useDispatch()
 
 
+    const onAddAvatar = async () => {
+        try {
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+            });
+
+            if (!result.canceled) {
+                const avatarUpload = await uploadImageToCloudinary(result.assets[0].uri);
+                setSelectedAvatar(avatarUpload);
+            }
+        } catch (error) {
+            console.error('Error picking image:', error);
+            Alert.alert('Помилка', 'Не вдалося вибрати зображення');
+        }
+    };
+
+    const onRemoveAvatar = () => {
+        setSelectedAvatar(null);
+    };
+
+
+
     const HandleSubmit = () => {
-        // console.log([name, email, password]);
-        dispatch(signUp({ email, password, name }));
-        navigation.navigate("Home")
+
+        dispatch(signUp({ email, password, name, selectedAvatar }));
+
     };
 
     return (
@@ -45,8 +74,33 @@ const RegistrationScreen = ({ navigation, route }) => {
                         height: keyboardVisible ? 374 : 549,
                         paddingTop: 92,
                     }}>
-                        <View style={styles.avatar}>
-                            <AddIcon style={styles.iconAdd} />
+                        <View style={styles.avatarContainer}>
+                            {isAvatarLoading ? (
+                                <View style={[styles.avatar, styles.centered]}>
+                                    <ActivityIndicator color={colors.accent} />
+                                </View>
+                            ) : (
+                                <Image
+                                    src={selectedAvatar}
+                                    style={styles.avatar}
+                                />
+                            )}
+                            <TouchableOpacity
+                                style={[
+                                    styles.addButton,
+                                    selectedAvatar && styles.removeButton,
+                                ]}
+                                onPress={selectedAvatar ? onRemoveAvatar : onAddAvatar}
+                            >
+                                <Text
+                                    style={[
+                                        styles.addButtonText,
+                                        selectedAvatar && styles.removeButtonText,
+                                    ]}
+                                >
+                                    {selectedAvatar ? 'x' : '+'}
+                                </Text>
+                            </TouchableOpacity>
                         </View>
                         <Text style={styles.title}>Реєстрація</Text>
                         <View style={styles.container}>
@@ -81,7 +135,7 @@ const RegistrationScreen = ({ navigation, route }) => {
                             </View>
                             <View style={styles.btnContainer}>
                                 <Button onPress={HandleSubmit} buttonStyle={styles.button}>
-                                    <Text style={[styles.baseText, styles.buttonText]}>
+                                    <Text style={[styles.baseText, styles.buttonText]} disabled={isLoading || isAvatarLoading}>
                                         Зареєстpуватися
                                     </Text>
                                 </Button>

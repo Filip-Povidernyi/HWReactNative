@@ -25,7 +25,7 @@ const BottomTabNavigator = () => {
 
     return (
         <Tabs.Navigator
-            initialRouteName="PostsTab"
+            initialRouteName="Posts"
             screenOptions={({ navigation }) => ({
                 headerRightContainerStyle: { paddingRight: 16 },
                 headerLeftContainerStyle: { paddingLeft: 16 },
@@ -38,7 +38,7 @@ const BottomTabNavigator = () => {
             })}
             backBehavior="history">
             <Tabs.Screen
-                name="PostsTab"
+                name="Posts"
                 component={PostsScreen}
                 options={({ navigation }) => ({
                     title: "Публікації",
@@ -50,7 +50,7 @@ const BottomTabNavigator = () => {
                     headerLeft: null,
                     tabBarIcon: ({ focused }) => (
                         <Button
-                            onPress={() => navigation.navigate("Home")}
+                            onPress={() => navigation.navigate("Posts")}
                         >
                             <PostsIcon strokeColor={focused ? colors.orange : colors.black_80} />
                         </ Button>
@@ -70,7 +70,7 @@ const BottomTabNavigator = () => {
                             if (navigation.canGoBack()) {
                                 navigation.goBack();
                             } else {
-                                navigation.navigate("Home");
+                                navigation.navigate("Posts");
                             }
                         }}>
                             <BackArrow />

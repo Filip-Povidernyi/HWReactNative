@@ -1,6 +1,7 @@
 import * as MediaLibrary from "expo-media-library";
 import * as Location from "expo-location";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImagePicker from 'expo-image-picker';
 
 import {
     KeyboardAvoidingView,
@@ -21,27 +22,23 @@ import CameraIcon from "../icons/CameraIcon";
 import PinIcon from "../icons/PinIcon";
 import TrashIcon from "../icons/TrashIcon";
 import styles from "../styles/createPostStyle";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import selectUser from "../redux/redusers/userSelectors";
-import { db, storage } from "../config";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { addDoc, collection } from "firebase/firestore";
+import { addPost } from "../utils/firestore";
+import uploadImageToCloudinary from "../components/CloudinaryUpload";
 
 
 const CreatePostsScreen = ({ navigation }) => {
-    const user = useSelector(selectUser);
     const [photo, setPhoto] = useState(null);
     const [title, setTitle] = useState("");
     const [place, setPlace] = useState("");
-    const [location, setLocation] = useState(null);
-    const [error, setError] = useState("")
-    const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-    const [facing, setFacing] = useState("back");
     const [permission, requestPermission] = useCameraPermissions();
     const camera = useRef(null);
 
     const [errorMsg, setErrorMsg] = useState(null);
+    const user = useSelector(selectUser);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         (async () => {
@@ -77,59 +74,66 @@ const CreatePostsScreen = ({ navigation }) => {
     const takePicture = async () => {
         if (!camera) return;
 
-        const location = await Location.getCurrentPositionAsync({});
-        setLocation(location);
-
-        const { uri } = await camera.current.takePictureAsync();
-        await MediaLibrary.saveToLibraryAsync(uri);
-        setPhoto(uri);
+        const image = await camera.current.takePictureAsync();
+        await MediaLibrary.saveToLibraryAsync(image.uri);
+        setPhoto(image.uri);
     };
+
+    const pickImage = async () => {
+        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert("Permission to access media library is required!");
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: false,
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const uri = result.assets[0].uri;
+            setPhoto(uri);
+        }
+    }
 
     const isAllowed = !!photo && !!title && !!place;
 
-    const uploadPhoto = async () => {
-        const response = await fetch(photo || "");
-
-        const file = await response.blob();
-
-        const photoId = "ph_" + Math.random() * 1000;
-        const imagesRef = ref(storage, `postImages/${photoId}`);
-
-        await uploadBytesResumable(imagesRef, file);
-
-        const url = await getDownloadURL(imagesRef);
-
-        return url;
-    };
-
-    const uploadPost = async () => {
-        const photo = await uploadPhoto();
-
-        try {
-            await addDoc(collection(db, "posts"), {
-                photo,
-                title,
-                place,
-                location: location.coords,
-                uid: user.id,
-            });
-        } catch (error) {
-            setError(error.message || "Error uploading post");
-        }
-    };
-
     const onSubmit = async () => {
         try {
-            console.log("Uploading post...");
-            await uploadPost();
+            if (!photo) {
+                alert("Please upload a photo first!");
+                return;
+            }
 
-            navigation.navigate("Home");
+            // Завантажуємо зображення на Cloudinary
+            const uploadedImageUrl = await uploadImageToCloudinary(photo);
 
+            const location = await Location.getCurrentPositionAsync({});
+            const coords = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            };
+
+            const post = {
+                photo: uploadedImageUrl,
+                title,
+                place,
+                coords,
+                like: false,
+            };
+            const userId = user.id;
+
+            dispatch(addPost({ userId, post }));
+
+            navigation.navigate("Posts");
             setTitle("");
             setPhoto(null);
             setPlace("");
         } catch (error) {
-            console.error("Error while submitting post:", error);
+            console.error("Error creating post:", error);
+            alert("Failed to create post. Please try again.");
         }
     };
 
@@ -144,7 +148,7 @@ const CreatePostsScreen = ({ navigation }) => {
             <View style={styles.createPostsContainer}>
                 <View>
                     <View style={styles.cameraContainer}>
-                        <CameraView style={styles.camera} ref={camera} facing={facing}>
+                        <CameraView style={styles.camera} ref={camera}>
                             {photo && (
                                 <View style={styles.takePhotoContainer}>
                                     <Image style={styles.camera} source={{ uri: photo }} />
@@ -158,13 +162,15 @@ const CreatePostsScreen = ({ navigation }) => {
                                 activeOpacity={0.8}
                                 onPress={takePicture}
                             >
-                                <CameraIcon size={24} color={photo ? colors.white : colors.underline_gray} />
+                                <CameraIcon />
                             </TouchableOpacity>
                         </CameraView>
                     </View>
-                    <Text style={styles.textUploade}>
-                        {!photo ? "Завантажте фото" : "Редагувати фото"}
-                    </Text>
+                    <TouchableOpacity onPress={pickImage}>
+                        <Text style={styles.textUploade}>
+                            {!photo ? "Завантажте фото" : "Редагувати фото"}
+                        </Text>
+                    </TouchableOpacity>
 
                     <KeyboardAvoidingView
                         behavior={Platform.OS == "ios" ? "padding" : "height"}
@@ -173,8 +179,6 @@ const CreatePostsScreen = ({ navigation }) => {
                             style={styles.createPostInput}
                             placeholder="Назва..."
                             placeholderTextColor={colors.text_gray}
-                            onFocus={() => setKeyboardVisible(true)}
-                            onBlur={() => setKeyboardVisible(false)}
                             value={title}
                             onChangeText={(text) => setTitle(text)}
                         />
@@ -183,8 +187,6 @@ const CreatePostsScreen = ({ navigation }) => {
                             <TextInput
                                 style={{ ...styles.createPostInput, paddingLeft: 28 }}
                                 placeholder="Місцевість..."
-                                onFocus={() => setKeyboardVisible(true)}
-                                onBlur={() => setKeyboardVisible(false)}
                                 placeholderTextColor={colors.text_gray}
                                 value={place}
                                 onChangeText={(text) => setPlace(text)}
@@ -220,4 +222,3 @@ const CreatePostsScreen = ({ navigation }) => {
 };
 
 export default CreatePostsScreen;
-

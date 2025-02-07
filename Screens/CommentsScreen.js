@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
     View,
     Image,
-    Text,
     TextInput,
     TouchableWithoutFeedback,
     TouchableOpacity,
@@ -10,135 +9,230 @@ import {
     Keyboard,
     Platform,
     KeyboardAvoidingView,
+    StyleSheet,
 } from "react-native";
 
 import { addDoc, collection, onSnapshot, query, Timestamp } from "firebase/firestore";
 
-import { Feather } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
 import { colors } from "../styles/colorConstantStyle";
 
 import { useSelector } from "react-redux";
 import selectUser from "../redux/redusers/userSelectors";
 import { db } from "../config";
+import Comment from "../components/Comment";
+import SendIcon from "../icons/SendIcon";
+import { getUserPosts } from "../utils/firestore";
 
 
 const CommentsScreen = ({ route }) => {
-    const { postId, uri } = route.params;
-    const { name } = useSelector(selectUser);
+    const { postId, photo, userId, index } = route.params;
+    const user = useSelector(selectUser);
 
-    const [comment, setComment] = useState("");
-    const [comments, setComments] = useState([]);
+
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    const [commentText, setCommentText] = useState("")
+    const [comment, setComment] = useState(false);
+    const [comments, setComments] = useState(null);
     const [error, setError] = useState("");
 
-    const createComment = async () => {
-        try {
-            const docRef = await addDoc(collection(db, `posts/${postId}/comments`), {
-                comment,
-                name,
-                // profilePhoto,
-                created: Timestamp.fromDate(new Date()),
-            });
 
-            Keyboard.dismiss();
-            setComment("");
+    const getComments = async (userId) => {
+        const postsData = await getUserPosts(userId);
+        const commentsArr = postsData.posts.filter((item) => item.postId === postId);
+        setComments(commentsArr[0].comments);
+    }
+
+
+    useEffect(() => {
+        getComments(userId);
+    }, []);
+
+    const updateComments = async (userId, postId, data) => {
+        const postsRef = doc(db, "posts", userId); // Референс до документа
+
+        try {
+            const docSnap = await getDoc(postsRef);
+            if (docSnap.exists()) {
+                const posts = docSnap.data().posts; // Завантажуємо масив постів
+                console.log('posts', posts);
+
+                // Знаходимо потрібний пост за його postId
+                const postIndex = posts.findIndex((post) => post.postId === postId);
+                if (postIndex !== -1) {
+                    // Оновлюємо comments
+                    posts[postIndex].comments = [
+                        ...posts[postIndex].comments || [],
+                        data,
+                    ];
+
+                    // Оновлюємо документ у Firestore
+                    await updateDoc(postsRef, { posts });
+                    console.log("Коментарі оновлені");
+                } else {
+                    console.log("Пост із таким postId не знайдено");
+                }
+            } else {
+                console.log("Документ не знайдено");
+            }
         } catch (error) {
-            setError(error.message || "Error creating comment");
+            console.error("Помилка оновлення коментарів:", error);
         }
     };
 
-    const getComments = async () => {
-        const q = query(collection(db, `posts/${postId}/comments`));
-        onSnapshot(q, (querySnapshot) => {
-            const comments = querySnapshot.docs.map((doc) => ({
-                ...doc.data(),
-                commentId: doc.id,
-            }));
-            setComments(comments);
-        });
+    const commentDate = () => {
+        const date = new Date();
+        const formDate = date.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+        })
+        const formTime = date.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+        })
+        return `${formDate} | ${formTime}`
+    }
+
+    const createComment = () => {
+        return {
+            text: commentText,
+            date: commentDate(),
+            avatar: user.profilePhoto,
+        }
+    }
+
+
+    const sendSubmit = () => {
+        setKeyboardVisible(false);
+        const newComment = createComment();
+        updateComments(userId, postId, newComment)
+        setComments((prevComments) => (prevComments ? [...prevComments, newComment] : [newComment]));
+        setCommentText("");
     };
 
-    useEffect(() => {
-        getComments();
-    }, []);
 
     return (
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-            <View style={styles.screensContainer}>
-                <Image style={styles.postPhotoInCommentScreen} source={{ uri }} />
-
-                {comments.length > 0 && (
-                    <FlatList
-                        data={comments}
-                        keyExtractor={(item) => item.commentId}
-                        renderItem={({ item }) => (
-                            <View
-                                style={{
-                                    flexDirection: item.name === name ? "row-reverse" : "row",
-                                    marginBottom: 24,
-                                }}
-                            >
-                                <View
-                                    style={{
-                                        ...styles.avatarWrapper,
-                                        marginRight: item.name === name ? 0 : 16,
-                                        marginLeft: item.name === name ? 16 : 0,
-                                    }}
-                                >
-                                    {item.profilePhoto ? (
-                                        <Image style={styles.profilePhoto} source={{ uri: item.profilePhoto }} />
-                                    ) : (
-                                        <FontAwesome name="user-circle" size={28} color={colors.orange} />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <View style={{
+                    ...styles.registrContainer,
+                    height: keyboardVisible ? "100%" : "100%",
+                    paddingTop: 32,
+                    paddingBottom: keyboardVisible ? 450 : 16,
+                }}>
+                    <View style={styles.innerContainer}>
+                        <Image source={{ uri: photo }} style={styles.image} />
+                        <View style={styles.commentsContainer}>
+                            {comments && comments.length > 0 ? (
+                                <FlatList
+                                    style={styles.commentsList}
+                                    data={comments}
+                                    renderItem={({ item }) => (
+                                        <Comment
+                                            text={item.text}
+                                            date={item.date}
+                                            avatar={item.avatar}
+                                            align={item.align}
+                                        />
                                     )}
-                                </View>
-                                <View style={styles.userContainer}>
-                                    <Text
-                                        style={{
-                                            ...styles.nickname,
-                                            textAlign: item.name === name ? "right" : "left",
-                                        }}
-                                    >
-                                        {item.name}
-                                    </Text>
-                                    <View style={styles.textContainer}>
-                                        <Text style={styles.baseText}>{item.comment}</Text>
-                                        <Text style={styles.baseText}>{item.created}</Text>
-
-                                        <Text
-                                            style={{
-                                                ...styles.data,
-                                                textAlign: item.name === name ? "left" : "right",
-                                            }}
-                                        ></Text>
-                                    </View>
-                                </View>
+                                />) : (<View />)
+                            }
+                        </View>
+                        <View>
+                            <View style={[styles.inputTextContainer, comment && styles.onFocused]}>
+                                <TextInput
+                                    style={styles.baseText}
+                                    value={commentText}
+                                    onChangeText={(text) => setCommentText(text)}
+                                    placeholder="Коментувати..."
+                                    multiline={true}
+                                    placeholderTextColor={colors.text_gray}
+                                    autoCapitalize="sentences"
+                                    onFocus={() => { setComment(true), setKeyboardVisible(true) }}
+                                    onBlur={() => { setComment(false), setKeyboardVisible(false) }}
+                                />
+                                <TouchableOpacity style={styles.sendBtn} onPress={sendSubmit}>
+                                    <SendIcon />
+                                </TouchableOpacity>
                             </View>
-                        )}
-                    />
-                )}
+                        </View>
+                    </View>
 
-                <View style={{ position: "relative", marginTop: 32 }}>
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        keyboardVerticalOffset={Platform.select({
-                            ios: 100,
-                        })}
-                    >
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder="Коментувати..."
-                            placeholderTextColor={colors.underline_gray}
-                            value={comment}
-                            onChangeText={(text) => setComment(text)}
-                        />
-                        <TouchableOpacity style={styles.sendButton} onPress={createComment}>
-                            <Feather name="arrow-up" size={24} color={colors.white} />
-                        </TouchableOpacity>
-                    </KeyboardAvoidingView>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
 };
+
+const styles = StyleSheet.create({
+    image: {
+        width: "100%",
+        height: 240,
+        borderRadius: 8,
+    },
+    registrContainer: {
+        width: "100%",
+        backgroundColor: colors.white,
+        alignSelf: "center",
+        paddingHorizontal: 16,
+    },
+    innerContainer: {
+        flex: 1,
+        justifyContent: "space-between",
+    },
+    commentsContainer: {
+        flex: 1,
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 24,
+        marginTop: 32,
+        marginBottom: 32,
+    },
+    inputTextContainer: {
+        width: "100% ",
+        height: 50,
+        alignItems: "center",
+        flexDirection: "row",
+        borderColor: colors.border_gray,
+        borderRadius: 8,
+        borderWidth: 1,
+        backgroundColor: colors.light_gray,
+        paddingHorizontal: 16,
+        fontFamily: "Roboto-Regular",
+        fontSize: 16,
+        fontWeight: 400,
+    },
+    onFocused: {
+        borderColor: colors.orange,
+    },
+    coverBtnContainer: {
+        marginLeft: 16,
+    },
+    baseText: {
+        flex: 1,
+        paddingVertical: 10,
+        fontSize: 16,
+        color: colors.black_primary,
+    },
+    sendBtn: {
+        height: 34,
+        width: 34,
+        borderRadius: 100,
+        position: "absolute",
+        right: 4,
+        bottom: 8,
+    },
+    commentsList: {
+        flex: 1,
+        width: "100%",
+    },
+    keyboardAvoidingView: {
+        flex: 1,
+    },
+});
 
 export default CommentsScreen;

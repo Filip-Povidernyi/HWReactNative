@@ -1,66 +1,55 @@
 import { useEffect, useState } from "react";
-import { FlatList, GestureHandlerRootView } from "react-native-gesture-handler";
+import { FlatList } from "react-native-gesture-handler";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../styles/colorConstantStyle";
 import MessageIcon from "../icons/MessageIcon";
 import PinIcon from "../icons/PinIcon";
 import { useSelector } from "react-redux";
 import selectUser from "../redux/redusers/userSelectors";
-import { db } from "../config";
-import { onSnapshot } from "firebase/firestore";
+import { getUserPosts } from "../utils/firestore";
 
-const PostsScreen = ({ navigation, route }) => {
+const PostsScreen = ({ navigation }) => {
 
     const user = useSelector(selectUser);
+    const userId = user.id;
+
     const [posts, setPosts] = useState([]);
 
     const getAllPosts = async () => {
-        const q = query(collection(db, "posts"));
-
-        onSnapshot(q, async (querySnapshot) => {
-            const posts = await Promise.all(
-                querySnapshot.docs.map(async (doc) => {
-                    const coll = collection(db, `posts/${doc.id}/comments`);
-                    const snapshot = await getCountFromServer(coll);
-
-                    return {
-                        ...doc.data(),
-                        postId: doc.id,
-                        commentCount: snapshot.data().count,
-                    };
-                })
-            );
-            setPosts(posts);
-        });
+        const result = await getUserPosts(user.id);
+        setPosts(result.posts)
     };
+
 
     useEffect(() => {
         getAllPosts();
     }, []);
 
     return (
-        <GestureHandlerRootView>
-            <View style={styles.postsContainer}>
-                <View style={styles.userContainer}>
-                    <Image
-                        style={styles.avatarPhoto}
-                        source={require("../assets/images/avatar.png")}
-                        resizeMode="cover"
-                    />
-                    <View style={styles.userData}>
-                        <Text style={styles.userName}>{user.name}</Text>
-                        <Text style={styles.userEmail}>{user.email}</Text>
-                    </View>
-                </View>
 
-                <View>
-                    <FlatList
+        <View style={styles.postsContainer}>
+            <View style={styles.userContainer}>
+                <Image
+                    style={styles.avatarPhoto}
+                    src={
+                        user.profilePhoto
+                    }
+                    resizeMode="cover"
+                />
+                <View style={styles.userData}>
+                    <Text style={styles.userName}>{user.displayName}</Text>
+                    <Text style={styles.userEmail}>{user.email}</Text>
+                </View>
+            </View>
+            <View style={{ paddingBottom: 130 }}>
+                {posts && posts.length > 0 ?
+                    (<FlatList
                         data={posts}
                         keyExtractor={(item, indx) => indx.toString()}
                         ItemSeparatorComponent={() => <View style={{ height: 34 }} />}
-                        renderItem={({ item }) => (
+                        renderItem={({ item, index }) => (
                             <View>
-                                <Image style={styles.postPhoto} source={{ uri: item.photo }} />
+                                <Image style={styles.postPhoto} src={item.photo} />
                                 <Text style={styles.postTitle}>{item.title}</Text>
                                 <View
                                     style={{
@@ -74,7 +63,9 @@ const PostsScreen = ({ navigation, route }) => {
                                         onPress={() =>
                                             navigation.navigate("Comments", {
                                                 postId: item.postId,
-                                                uri: item.photo,
+                                                photo: item.photo,
+                                                userId,
+                                                index,
                                             })
                                         }
                                     >
@@ -84,8 +75,7 @@ const PostsScreen = ({ navigation, route }) => {
                                     <TouchableOpacity
                                         onPress={() =>
                                             navigation.navigate("Map", {
-                                                latitude: item.coords.latitude,
-                                                longitude: item.coords.longitude,
+                                                coords: item.coords,
                                             })
                                         }
                                         style={{ flexDirection: "row", alignItems: "center" }}
@@ -96,10 +86,12 @@ const PostsScreen = ({ navigation, route }) => {
                                 </View>
                             </View>
                         )}
-                    />
-                </View>
+                    />) : (
+                        null
+                    )
+                }
             </View>
-        </GestureHandlerRootView>
+        </View>
     );
 };
 
@@ -150,7 +142,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: colors.black_primary,
     },
-
 })
 
 export default PostsScreen;

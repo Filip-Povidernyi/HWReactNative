@@ -5,27 +5,27 @@ import { addUser, getUser } from "../../utils/firestore";
 import { auth } from "../../config";
 
 export const signUp = createAsyncThunk(
-    "auth/registration",
-    async ({ email, password, name }, thunkAPI) => {
+    "auth/signUp",
+    async ({ email, password, name, selectedAvatar }, thunkAPI) => {
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
 
-            const user = auth.currentUser;
+            const credentials = await createUserWithEmailAndPassword(auth, email, password);
+            const user = credentials.user;
 
-            if (!user) return;
-
-            // const url =
-            //   data.profilePhoto &&
-            //   (await uploadPhoto(data.profilePhoto, "avatars", uid));
+            if (!user) {
+                Alert.alert("Цей аккаунт вже зареєстрований");
+                return
+            };
 
             await addUser(user.uid, {
                 uid: user.uid,
                 email: user.email || "",
-                name: user.name || "",
-                // password: password || "",
+                displayName: name || "",
+                password: password || "",
+                photoURL: selectedAvatar,
             });
 
-            return { uid: user.uid, email: user.email, name: user.name, photoURL: user.photoURL };
+            return { uid: user.uid, email: user.email, displayName: name, password: password, photoURL: selectedAvatar };
         } catch (error) {
             return thunkAPI.rejectWithValue(error.message);
         }
@@ -62,13 +62,14 @@ export const isLogined = createAsyncThunk("auth/isLogined", async (_, thunkAPI) 
         let name = null;
         let profilePhoto = null;
 
-        await onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, (user) => {
             console.log("Auth state changed:", user);
 
             if (user) {
                 uid = user.uid;
                 email = user.email;
                 name = user.name;
+                password = user.password;
                 profilePhoto = user.photoURL;
             }
         });
@@ -77,7 +78,7 @@ export const isLogined = createAsyncThunk("auth/isLogined", async (_, thunkAPI) 
             return thunkAPI.rejectWithValue("Don't have user email");
         }
 
-        return { name, email, profilePhoto, uid };
+        return { name, email, profilePhoto, password, uid };
     } catch (error) {
         return thunkAPI.rejectWithValue(error.message);
     }

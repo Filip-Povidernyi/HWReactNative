@@ -5,8 +5,6 @@ import InputField from "../components/InputField";
 import PasswordInput from "../components/PasswordInput";
 import Button from "../components/Button";
 import styles from "../styles/registrationStyles";
-import { useNavigation } from "@react-navigation/native";
-import { useAppContext } from "../components/AppProvider";
 import { useDispatch } from "react-redux";
 import { signIn } from "../redux/redusers/userOperations";
 
