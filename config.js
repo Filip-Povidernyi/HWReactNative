@@ -4,10 +4,8 @@ import { getReactNativePersistence, initializeAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-
-
 const firebaseConfig = {
-    apiKey: "AIzaSyD6mXxi7g-AEJGrWssUjdbW1mkqznULi_M",
+    apiKey: process.env.EXPO_PUBLIC_API_KEY,
     authDomain: 'myprg-cc3e8.firebaseapp.com',
     projectId: "myprg-cc3e8",
     storageBucket: "myprg-cc3e8.appspot.com",
