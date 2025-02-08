@@ -12,7 +12,7 @@ const Comment = ({ text, date, avatar, align = "left" }) => {
             ]}
         >
             <Image
-                source={avatar}
+                source={{ uri: avatar }}
                 style={[styles.avatar, isLeft ? styles.avatarLeft : styles.avatarRight]}
             />
             <View

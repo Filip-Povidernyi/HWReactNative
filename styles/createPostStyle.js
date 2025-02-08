@@ -102,6 +102,33 @@ const styles = StyleSheet.create({
             },
         }),
     },
+    camera: {
+        flex: 1,
+        width: "100%",
+        height: "100%",
+        borderRadius: 8,
+    },
+    cameraContent: {
+        flex: 1,
+        backgroundColor: "transparent",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    cameraIconWrapper: {
+        position: "absolute",
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: colors.white,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    image: {
+        width: "100%",
+        height: "100%",
+        borderRadius: 8,
+    },
+
 })
 
 export default styles;
