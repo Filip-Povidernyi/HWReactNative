@@ -1,6 +1,4 @@
-import * as MediaLibrary from "expo-media-library";
 import * as Location from "expo-location";
-import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from 'expo-image-picker';
 
 import {
@@ -26,19 +24,20 @@ import { useDispatch, useSelector } from "react-redux";
 import selectUser from "../redux/redusers/userSelectors";
 import { addPost } from "../utils/firestore";
 import uploadImageToCloudinary from "../components/CloudinaryUpload";
+import { CameraView, useCameraPermissions } from "expo-camera";
 
 
 const CreatePostsScreen = ({ navigation }) => {
     const [photo, setPhoto] = useState(null);
     const [title, setTitle] = useState("");
     const [place, setPlace] = useState("");
-
+    const [facing] = useState("back");
     const [permission, requestPermission] = useCameraPermissions();
     const camera = useRef(null);
 
     const [errorMsg, setErrorMsg] = useState(null);
     const user = useSelector(selectUser);
-    const dispatch = useDispatch();
+
 
     useEffect(() => {
         (async () => {
@@ -55,14 +54,16 @@ const CreatePostsScreen = ({ navigation }) => {
         return <View />;
     }
 
-    if (!permission.granted) {
 
+    if (!permission.granted) {
         return (
-            <View style={styles.container}>
+            <View style={styles.section}>
                 <Text style={styles.message}>
-                    We need your permission to show the camera
+                    Нам потрібен дозвіл на використання камери
                 </Text>
-                <Button onPress={requestPermission} title="grant permission" />
+                <TouchableOpacity onPress={requestPermission}>
+                    <Text>Надати дозвіл</Text>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -71,30 +72,40 @@ const CreatePostsScreen = ({ navigation }) => {
         Keyboard.dismiss();
     };
 
-    const takePicture = async () => {
-        if (!camera) return;
 
-        const image = await camera.current.takePictureAsync();
-        await MediaLibrary.saveToLibraryAsync(image.uri);
-        setPhoto(image.uri);
+    const takePicture = async () => {
+        try {
+            if (!camera.current) return;
+            const photo = await camera.current.takePictureAsync();
+            setPhoto(photo.uri);
+        } catch (error) {
+            console.log("Error taking picture:", error);
+        }
     };
 
+
     const pickImage = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-            alert("Permission to access media library is required!");
-            return;
-        }
+        try {
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: false,
-            quality: 1,
-        });
 
-        if (!result.canceled) {
-            const uri = result.assets[0].uri;
-            setPhoto(uri);
+            if (!permissionResult.granted) {
+                alert("Необхідний дозвіл на доступ до галереї");
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ['images'],
+                allowsEditing: false,
+                quality: 1,
+            });
+
+            if (!result.canceled) {
+                const uri = result.assets[0].uri
+                setPhoto(uri);
+            }
+        } catch (error) {
+            console.log('Error picking image', error)
         }
     }
 
@@ -102,13 +113,6 @@ const CreatePostsScreen = ({ navigation }) => {
 
     const onSubmit = async () => {
         try {
-            if (!photo) {
-                alert("Please upload a photo first!");
-                return;
-            }
-
-            // Завантажуємо зображення на Cloudinary
-            const uploadedImageUrl = await uploadImageToCloudinary(photo);
 
             const location = await Location.getCurrentPositionAsync({});
             const coords = {
@@ -117,15 +121,15 @@ const CreatePostsScreen = ({ navigation }) => {
             };
 
             const post = {
-                photo: uploadedImageUrl,
+                id: user.id + Date.now().toString(32),
+                userId: user.id,
+                photo: await uploadImageToCloudinary(photo),
                 title,
                 place,
-                coords,
-                like: false,
+                coords
             };
-            const userId = user.id;
 
-            dispatch(addPost({ userId, post }));
+            addPost(post);
 
             navigation.navigate("Posts");
             setTitle("");
@@ -148,23 +152,29 @@ const CreatePostsScreen = ({ navigation }) => {
             <View style={styles.createPostsContainer}>
                 <View>
                     <View style={styles.cameraContainer}>
-                        <CameraView style={styles.camera} ref={camera}>
-                            {photo && (
-                                <View style={styles.takePhotoContainer}>
-                                    <Image style={styles.camera} source={{ uri: photo }} />
+                        {!photo ? (
+                            <CameraView style={styles.camera} facing={facing} ref={camera}>
+                                <View style={styles.cameraContent}>
+                                    <TouchableOpacity
+                                        style={styles.cameraIconWrapper}
+                                        onPress={takePicture}
+                                    >
+                                        <CameraIcon />
+                                    </TouchableOpacity>
                                 </View>
-                            )}
-                            <TouchableOpacity
-                                style={{
-                                    ...styles.photoBtnContainer,
-                                    backgroundColor: photo ? colors.white_30 : colors.white,
-                                }}
-                                activeOpacity={0.8}
-                                onPress={takePicture}
-                            >
-                                <CameraIcon />
-                            </TouchableOpacity>
-                        </CameraView>
+                            </CameraView>
+                        ) : (
+                            <>
+                                <Image source={{ uri: photo }} style={styles.image} />
+                                <TouchableOpacity
+                                    style={styles.cameraIconWrapper}
+                                    onPress={() => setPhoto(null)}
+                                >
+                                    <CameraIcon />
+                                </TouchableOpacity>
+                            </>
+                        )}
+
                     </View>
                     <TouchableOpacity onPress={pickImage}>
                         <Text style={styles.textUploade}>

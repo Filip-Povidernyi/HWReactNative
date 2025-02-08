@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Image, ImageBackground, Keyboard, KeyboardAvoidingView, Platform, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Image, ImageBackground, Keyboard, KeyboardAvoidingView, Platform, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import image from "../assets/images/PhotoBG.png"
 import styles from "../styles/registrationStyles.js"
 import Button from "../components/Button";
@@ -9,36 +9,36 @@ import * as ImagePicker from 'expo-image-picker';
 import selectUser from "../redux/redusers/userSelectors.js";
 import LogOutIcon from "../icons/LogOutIcon.js";
 import { FlatList } from "react-native-gesture-handler";
-import { getPosts, getUserPosts, updateUserInFirestore } from "../utils/firestore.js";
+import { getPosts, updateUserInFirestore } from "../utils/firestore.js";
 import MessageIcon from "../icons/MessageIcon.js";
 import PinIcon from "../icons/PinIcon.js";
 import uploadImageToCloudinary from "../components/CloudinaryUpload.js";
 import LikeIcon from "../icons/LikeIcon.js";
-
+import { colors } from "../styles/colorConstantStyle.js";
 
 
 const RegistrationScreen = ({ navigation }) => {
 
     const user = useSelector(selectUser);
     const userId = user.id;
+    const avatar = user.profilePhoto;
 
     const dispatch = useDispatch();
 
     const [keyboardVisible, setKeyboardVisible] = useState(false);
-    const [selectedAvatar, setSelectedAvatar] = useState(user.avatar);
+    const [selectedAvatar, setSelectedAvatar] = useState(user.profilePhoto);
     const [isAvatarLoading, setIsAvatarLoading] = useState(false);
     const [posts, setPosts] = useState([]);
 
 
 
-    const getAllPosts = async (userId) => {
-        const result = await getUserPosts(userId);
-        const allPosts = result.posts;
-        setPosts(allPosts);
+    const getAllPosts = async () => {
+        const result = await getPosts(userId);
+        setPosts(result);
     };
 
     useEffect(() => {
-        getAllPosts(userId);
+        getAllPosts();
     }, []);
 
     const handleLoginOut = () => {
@@ -95,7 +95,7 @@ const RegistrationScreen = ({ navigation }) => {
                                 </View>
                             ) : (
                                 <Image
-                                    source={{ uri: selectedAvatar }}
+                                    src={selectedAvatar}
                                     style={styles.avatar}
                                 />
                             )}
@@ -144,9 +144,10 @@ const RegistrationScreen = ({ navigation }) => {
                                                         style={{ flexDirection: "row", alignItems: "center" }}
                                                         onPress={() =>
                                                             navigation.navigate("Comments", {
-                                                                postId: item.postId,
+                                                                postId: item.id,
+                                                                userId: item.userId,
                                                                 photo: item.photo,
-                                                                userId,
+                                                                avatar,
                                                             })
                                                         }
                                                     >

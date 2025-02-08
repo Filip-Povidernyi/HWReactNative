@@ -1,7 +1,6 @@
 import { addDoc, collection, doc, getDoc, getDocs, setDoc, updateDoc, arrayUnion, query, where } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../config";
-import { createAsyncThunk } from "@reduxjs/toolkit";
 
 
 
@@ -29,7 +28,7 @@ export const getUser = async (userId) => {
 
 export const updateUserInFirestore = async (uid, data) => {
     try {
-        await setDoc(doc(db, "posts", uid), data, { merge: true });
+        await setDoc(doc(db, "users", uid), data, { merge: true });
         console.log("User data updated to Firestore:", uid);
     } catch (error) {
         console.error("Error saving user data to Firestore:", error);
@@ -56,104 +55,99 @@ export const getImageUrl = async (imageRef) => {
     return url;
 };
 
-// export const addPost = async (post) => {
-//     try {
-//         const postsRef = collection(db, 'posts');
-//         const docRef = await addDoc(postsRef, {
-//             ...post,
-//             createdAt: new Date().toISOString()
-//         });
-//         return { id: docRef.id, ...post };
-//     } catch (error) {
-//         console.error('Error adding post:', error);
-//         throw error;
-//     }
-// };
-export const addPost = createAsyncThunk(
-    'posts/addPost',
-    async ({ userId, post }, thunkAPI) => {
-        try {
-            const postRef = doc(db, 'posts', userId);
-            const postId = Date.now().toString();
 
-            await setDoc(postRef, {
-                posts: arrayUnion({ ...post, postId }),
-            }, { merge: true });
 
-            console.log('Post added:', post);
-            return post;
-        } catch (error) {
-            console.error('Error adding post:', error);
-            return thunkAPI.rejectWithValue(error.message);
-        }
-    });
-
-export const addComment = async (postId, comment) => {
+export const addPost = async (post) => {
     try {
-        await setDoc(doc(db, 'posts', postId), { postId, posts: [post] }, { merge: true });
-        console.log('Post added:', userId);
+
+        await setDoc(doc(db, "posts", post.userId), post, { merge: true, });
+        console.log("Post added:", post);
+        return post;
     } catch (error) {
-        console.error('Error adding post:', error);
-    }
-};
-
-export const getUserPosts = async (userId) => {
-    const docRef = doc(db, "posts", userId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-        console.log("User data:", docSnap.data());
-        return docSnap.data();
-    } else {
-        console.log("No such document!");
-        return null;
-    }
-    // try {
-    //     const postsRef = collection(db, 'posts');
-    //     const q = query(
-    //         postsRef,
-    //         where('userId', '==', userId),
-    //     );
-
-    //     const querySnapshot = await getDocs(q);
-    //     const posts = [];
-    //     querySnapshot.forEach((doc) => {
-    //         posts.push({ id: doc.id, ...doc.data() });
-    //     });
-
-    //     return posts;
-    // } catch (error) {
-    //     console.error('Error getting user posts:', error);
-    //     throw error;
-    // }
-};
-
-
-export const getPosts = async () => {
-    try {
-        const postsCollection = collection(db, "posts");
-        const querySnapshot = await getDocs(postsCollection);
-
-        const allPosts = [];
-        querySnapshot.forEach((doc) => {
-            allPosts.push({ id: doc.id, ...doc.data() });
-        });
-
-        return allPosts;
-    } catch (error) {
-        console.error("Помилка отримання всіх постів:", error);
+        console.error("Error adding post:", error);
         throw error;
     }
-    // const docRef = doc(db, "posts");
-    // console.log('docRef', docRef)
-    // const docSnap = await getDoc(docRef);
+};
 
-    // if (docSnap.exists()) {
-    //     console.log("User data:", docSnap.data());
-    //     return docSnap.data();
-    // } else {
-    //     console.log("No document!");
-    //     return null;
-    // }
+
+export const getPosts = async (userId) => {
+    try {
+
+        const postsQuery = query(
+            collection(db, "posts"),
+            where("userId", "==", userId)
+        );
+        const querySnapshot = await getDocs(postsQuery);
+
+        const posts = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        console.log("Posts for user:", userId, posts);
+        return posts;
+    } catch (error) {
+        console.error("Error fetching posts by userId:", error);
+        throw error;
+    }
+};
+
+
+export const getPostById = async (id) => {
+    try {
+
+        const postsQuery = query(
+            collection(db, "posts"),
+            where("id", "==", id)
+        );
+        const querySnapshot = await getDocs(postsQuery);
+
+        const posts = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        console.log("Post with id: ", id, posts);
+        return posts;
+    } catch (error) {
+        console.error("Error fetching posts by userId:", error);
+        throw error;
+    }
+};
+
+export const getCommentsByPostId = async (id) => {
+    try {
+
+        const postsQuery = query(
+            collection(db, "comments"),
+            where("postId", "==", id)
+        );
+        const querySnapshot = await getDocs(postsQuery);
+
+        const comments = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        console.log("Comments to post with id: ", id, comments);
+        return comments;
+    } catch (error) {
+        console.error("Error fetching posts by userId:", error);
+        throw error;
+    }
+};
+
+export const addComment = async (comment) => {
+    try {
+        console.log("comment", comment);
+        await setDoc(doc(db, "comments", comment.id), comment, {
+            merge: true,
+        });
+        console.log("Comment added:", comment);
+        return comment;
+    } catch (error) {
+        console.error("Error adding comment:", error);
+        throw error;
+    }
 };
 
