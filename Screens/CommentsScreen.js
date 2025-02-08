@@ -12,7 +12,7 @@ import {
     StyleSheet,
 } from "react-native";
 
-import { addDoc, collection, onSnapshot, query, Timestamp } from "firebase/firestore";
+import { doc, collection, getDoc, onSnapshot, query, Timestamp, setDoc } from "firebase/firestore";
 
 import { colors } from "../styles/colorConstantStyle";
 
@@ -32,12 +32,14 @@ const CommentsScreen = ({ route }) => {
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [commentText, setCommentText] = useState("")
     const [comment, setComment] = useState(false);
-    const [comments, setComments] = useState(null);
-    const [error, setError] = useState("");
+    const [comments, setComments] = useState([]);
+    const [data, setData] = useState({});
 
 
     const getComments = async (userId) => {
         const postsData = await getUserPosts(userId);
+        console.log('postsData', postsData)
+        setData(postsData.posts);
         const commentsArr = postsData.posts.filter((item) => item.postId === postId);
         setComments(commentsArr[0].comments);
     }
@@ -47,37 +49,6 @@ const CommentsScreen = ({ route }) => {
         getComments(userId);
     }, []);
 
-    const updateComments = async (userId, postId, data) => {
-        const postsRef = doc(db, "posts", userId); // Референс до документа
-
-        try {
-            const docSnap = await getDoc(postsRef);
-            if (docSnap.exists()) {
-                const posts = docSnap.data().posts; // Завантажуємо масив постів
-                console.log('posts', posts);
-
-                // Знаходимо потрібний пост за його postId
-                const postIndex = posts.findIndex((post) => post.postId === postId);
-                if (postIndex !== -1) {
-                    // Оновлюємо comments
-                    posts[postIndex].comments = [
-                        ...posts[postIndex].comments || [],
-                        data,
-                    ];
-
-                    // Оновлюємо документ у Firestore
-                    await updateDoc(postsRef, { posts });
-                    console.log("Коментарі оновлені");
-                } else {
-                    console.log("Пост із таким postId не знайдено");
-                }
-            } else {
-                console.log("Документ не знайдено");
-            }
-        } catch (error) {
-            console.error("Помилка оновлення коментарів:", error);
-        }
-    };
 
     const commentDate = () => {
         const date = new Date();
@@ -96,6 +67,7 @@ const CommentsScreen = ({ route }) => {
 
     const createComment = () => {
         return {
+            postId,
             text: commentText,
             date: commentDate(),
             avatar: user.profilePhoto,
@@ -103,14 +75,26 @@ const CommentsScreen = ({ route }) => {
     }
 
 
-    const sendSubmit = () => {
-        setKeyboardVisible(false);
-        const newComment = createComment();
-        updateComments(userId, postId, newComment)
-        setComments((prevComments) => (prevComments ? [...prevComments, newComment] : [newComment]));
-        setCommentText("");
+    const updateComments = async (postId, data) => {
+        try {
+            await setDoc(doc(db, "users", postId), data, { merge: true });
+            console.log("User data updated to Firestore:", uid);
+        } catch (error) {
+            console.error("Error saving user data to Firestore:", error);
+        }
     };
 
+    const sendSubmit = () => {
+
+        const newComment = createComment();
+        console.log('newComment', newComment);
+        data[index].comments = comments
+        setComments((prevComments) => (prevComments ? [...prevComments, newComment] : [newComment]));
+        console.log('comments', comments)
+        setCommentText("");
+        data[index].comments = comments;
+        console.log('data', data)
+    };
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -120,7 +104,7 @@ const CommentsScreen = ({ route }) => {
             >
                 <View style={{
                     ...styles.registrContainer,
-                    height: keyboardVisible ? "100%" : "100%",
+                    height: keyboardVisible ? "70%" : "100%",
                     paddingTop: 32,
                     paddingBottom: keyboardVisible ? 450 : 16,
                 }}>

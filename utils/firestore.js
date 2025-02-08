@@ -27,7 +27,7 @@ export const getUser = async (userId) => {
     }
 };
 
-export const updateUserInFirestore = async (userId, postId, data) => {
+export const updateUserInFirestore = async (uid, data) => {
     try {
         await setDoc(doc(db, "posts", uid), data, { merge: true });
         console.log("User data updated to Firestore:", uid);
@@ -36,14 +36,6 @@ export const updateUserInFirestore = async (userId, postId, data) => {
     }
 };
 
-export const updateCommentsInFirestore = async (postId, data) => {
-    try {
-        await setDoc(doc(db, "users", postId), data, { merge: true });
-        console.log("User data updated to Firestore:", uid);
-    } catch (error) {
-        console.error("Error saving user data to Firestore:", error);
-    }
-};
 
 export const uploadImage = async (userId, file, fileName) => {
     try {
@@ -96,14 +88,14 @@ export const addPost = createAsyncThunk(
         }
     });
 
-// export const addPost = async (userId, post) => {
-//     try {
-//         await setDoc(doc(db, 'posts', userId), { userId, posts: [post] }, { merge: true });
-//         console.log('Post added:', userId);
-//     } catch (error) {
-//         console.error('Error adding post:', error);
-//     }
-// };
+export const addComment = async (postId, comment) => {
+    try {
+        await setDoc(doc(db, 'posts', postId), { postId, posts: [post] }, { merge: true });
+        console.log('Post added:', userId);
+    } catch (error) {
+        console.error('Error adding post:', error);
+    }
+};
 
 export const getUserPosts = async (userId) => {
     const docRef = doc(db, "posts", userId);

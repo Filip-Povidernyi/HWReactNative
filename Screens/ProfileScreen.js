@@ -9,7 +9,7 @@ import * as ImagePicker from 'expo-image-picker';
 import selectUser from "../redux/redusers/userSelectors.js";
 import LogOutIcon from "../icons/LogOutIcon.js";
 import { FlatList } from "react-native-gesture-handler";
-import { getUserPosts, updateUserInFirestore } from "../utils/firestore.js";
+import { getPosts, getUserPosts, updateUserInFirestore } from "../utils/firestore.js";
 import MessageIcon from "../icons/MessageIcon.js";
 import PinIcon from "../icons/PinIcon.js";
 import uploadImageToCloudinary from "../components/CloudinaryUpload.js";
@@ -147,7 +147,6 @@ const RegistrationScreen = ({ navigation }) => {
                                                                 postId: item.postId,
                                                                 photo: item.photo,
                                                                 userId,
-                                                                index,
                                                             })
                                                         }
                                                     >
