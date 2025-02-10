@@ -16,13 +16,23 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.filip_po.HWReactNative"
     },
-    "web": {
-
-    },
+    "web": {},
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ca557e45-99a5-453e-9bba-7e8273320b6a"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/ca557e45-99a5-453e-9bba-7e8273320b6a"
+    }
   }
 }
